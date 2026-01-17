@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Task Manager</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: linear-gradient(120deg, #6366f1, #9333ea);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+    }
+
+    .container {
+      background: white;
+      width: 420px;
+      padding: 25px;
+      border-radius: 10px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+    }
+
+    h2 {
+      text-align: center;
+      margin-bottom: 10px;
+    }
+
+    input, button {
+      width: 100%;
+      padding: 10px;
+      margin-top: 10px;
+      font-size: 14px;
+    }
+
+    button {
+      background: #4f46e5;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background: #4338ca;
+    }
+
+    .hidden {
+      display: none;
+    }
+
+    .user {
+      text-align: center;
+      font-size: 14px;
+      margin-bottom: 10px;
+      color: #555;
+    }
+
+    ul {
+      padding-left: 20px;
+    }
+
+    li {
+      margin-top: 6px;
+    }
+
+    .logout {
+      background: #dc2626;
+      margin-top: 10px;
+    }
+  </style>
+</head>
+<body>
+
+<div class="container">
+
+  <h2>Task Manager</h2>
+
+  <div id="authSection">
+    <input id="email" type="email" placeholder="Email" />
+    <input id="password" type="password" placeholder="Password" />
+    <button onclick="signup()">Signup</button>
+    <button onclick="login()">Login</button>
+  </div>
+
+  <div id="taskSection" class="hidden">
+    <div class="user" id="userInfo"></div>
+
+    <input id="taskTitle" type="text" placeholder="New task..." />
+    <button onclick="addTask()">Add Task</button>
+
+    <ul id="taskList"></ul>
+
+    <button class="logout" onclick="logout()">Logout</button>
+  </div>
+
+</div>
+
+<script>
+  const BASE_URL = window.location.origin;
+
+  function getToken() {
+    return localStorage.getItem("token");
+  }
+
+  function showTasksUI(email) {
+    document.getElementById("authSection").classList.add("hidden");
+    document.getElementById("taskSection").classList.remove("hidden");
+    document.getElementById("userInfo").innerText = "Logged in";
+    loadTasks();
+  }
+
+  function logout() {
+    localStorage.removeItem("token");
+    location.reload();
+  }
+
+  async function signup() {
+    const email = emailInput();
+    const password = passwordInput();
+
+    const res = await fetch(BASE_URL + "/signup", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email, password })
+    });
+
+    alert(await res.text());
+  }
+
+  async function login() {
+    const email = emailInput();
+    const password = passwordInput();
+
+    const res = await fetch(BASE_URL + "/login", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email, password })
+    });
+
+    const data = await res.json();
+    localStorage.setItem("token", data.token);
+    showTasksUI(email);
+  }
+
+  async function addTask() {
+    const token = getToken();
+    const title = document.getElementById("taskTitle").value;
+
+    await fetch(BASE_URL + "/tasks", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": "Bearer " + token
+      },
+      body: JSON.stringify({ title, done: false })
+    });
+
+    document.getElementById("taskTitle").value = "";
+    loadTasks();
+  }
+
+  async function loadTasks() {
+    const token = getToken();
+
+    const res = await fetch(BASE_URL + "/tasks", {
+      headers: { "Authorization": "Bearer " + token }
+    });
+
+    const tasks = await res.json();
+    const list = document.getElementById("taskList");
+    list.innerHTML = "";
+
+    tasks.forEach(t => {
+      const li = document.createElement("li");
+      li.textContent = "• " + t.title;
+      list.appendChild(li);
+    });
+  }
+
+  function emailInput() {
+    return document.getElementById("email").value;
+  }
+
+  function passwordInput() {
+    return document.getElementById("password").value;
+  }
+
+  if (getToken()) {
+    showTasksUI();
+  }
+</script>
+
+</body>
+</html>
