@@ -1,24 +1,25 @@
+// =====================
 // Load environment variables
-const jwt = require("jsonwebtoken");
-
-const bcrypt = require("bcryptjs");
-
+// =====================
 require("dotenv").config();
 
-// Imports
 const express = require("express");
 const mongoose = require("mongoose");
+const bcrypt = require("bcryptjs");
+const jwt = require("jsonwebtoken");
 
+// =====================
 // Create app
+// =====================
 const app = express();
 app.use(express.json());
-app.use(express.static(__dirname));
+app.use(express.static("public"));
 
 // =====================
-// MongoDB Schemas
+// MongoDB Schemas & Models
 // =====================
 
-// User schema (for auth later)
+// User schema
 const userSchema = new mongoose.Schema({
   email: {
     type: String,
@@ -33,16 +34,27 @@ const userSchema = new mongoose.Schema({
 
 const User = mongoose.model("User", userSchema);
 
-// Task schema
+// Task schema (USER-SPECIFIC)
 const taskSchema = new mongoose.Schema({
-  title: String,
-  done: Boolean
+  title: {
+    type: String,
+    required: true
+  },
+  done: {
+    type: Boolean,
+    default: false
+  },
+  userId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "User",
+    required: true
+  }
 });
 
 const Task = mongoose.model("Task", taskSchema);
 
 // =====================
-// Routes
+// Auth Middleware
 // =====================
 const auth = (req, res, next) => {
   const header = req.headers.authorization;
@@ -61,48 +73,22 @@ const auth = (req, res, next) => {
     req.userId = decoded.userId;
     next();
   } catch (err) {
-    res.status(401).send("Invalid token");
+    return res.status(401).send("Invalid token");
   }
 };
-// Optional root route
-app.get("/",(req, res) => {
+
+// =====================
+// Routes
+// =====================
+
+// Root
+app.get("/", (req, res) => {
   res.send("Backend is running");
 });
 
-// Get all tasks
-app.get("/tasks", auth,async (req, res) => {
-  const tasks = await Task.find();
-  res.json(tasks);
-});
+// ---------- AUTH ROUTES ----------
 
-// Create task
-app.post("/tasks",auth, async (req, res) => {
-  const task = new Task(req.body);
-  await task.save();
-  res.send("Task saved to DB");
-});
-
-// Update task
-app.put("/tasks/:id",auth, async (req, res) => {
-  const updatedTask = await Task.findByIdAndUpdate(
-    req.params.id,
-    req.body,
-    { new: true }
-  );
-
-  if (!updatedTask) {
-    return res.status(404).send("Task not found");
-  }
-
-  res.json(updatedTask);
-});
-
-// Delete task
-app.delete("/tasks/:id", auth,async (req, res) => {
-  await Task.findByIdAndDelete(req.params.id);
-  res.send("Task deleted");
-});
-
+// Signup
 app.post("/signup", async (req, res) => {
   const { email, password } = req.body;
 
@@ -126,7 +112,8 @@ app.post("/signup", async (req, res) => {
   res.send("User registered successfully");
 });
 
-app.post("/login",async (req, res) => {
+// Login
+app.post("/login", async (req, res) => {
   const { email, password } = req.body;
 
   const user = await User.findOne({ email });
@@ -148,19 +135,60 @@ app.post("/login",async (req, res) => {
   res.json({ token });
 });
 
+// ---------- TASK ROUTES (PROTECTED) ----------
+
+// Get tasks (ONLY logged-in user's tasks)
+app.get("/tasks", auth, async (req, res) => {
+  const tasks = await Task.find({ userId: req.userId });
+  res.json(tasks);
+});
+
+// Create task
+app.post("/tasks", auth, async (req, res) => {
+  const task = new Task({
+    title: req.body.title,
+    done: req.body.done || false,
+    userId: req.userId
+  });
+
+  await task.save();
+  res.send("Task saved to DB");
+});
+
+// Update task (only own task)
+app.put("/tasks/:id", auth, async (req, res) => {
+  const updatedTask = await Task.findOneAndUpdate(
+    { _id: req.params.id, userId: req.userId },
+    req.body,
+    { new: true }
+  );
+
+  if (!updatedTask) {
+    return res.status(404).send("Task not found");
+  }
+
+  res.json(updatedTask);
+});
+
+// Delete task (only own task)
+app.delete("/tasks/:id", auth, async (req, res) => {
+  await Task.findOneAndDelete({
+    _id: req.params.id,
+    userId: req.userId
+  });
+
+  res.send("Task deleted");
+});
 
 // =====================
 // Database Connection
 // =====================
-
 const PORT = process.env.PORT || 3000;
 
 mongoose
   .connect(process.env.MONGO_URL.trim())
   .then(() => {
     console.log("MongoDB connected");
-
-    // Start server ONLY after DB connects
     app.listen(PORT, () => {
       console.log("Server running on port", PORT);
     });
