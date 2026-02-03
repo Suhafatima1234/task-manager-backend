@@ -222,3 +222,9 @@ async function deleteTask(id) {
   showAlert("Task deleted successfully 🗑️");
   loadTasks();
 }
+
+function togglePassword(id) {
+  const input = document.getElementById(id);
+  input.type = input.type === "password" ? "text" : "password";
+}
+

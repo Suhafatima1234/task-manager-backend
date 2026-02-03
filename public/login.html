@@ -24,9 +24,13 @@
     </div>
 
     <input id="email" type="email" placeholder="Email">
-    <input id="password" type="password" placeholder="Password">
+     <div class="password-wrapper">
+  <input id="password" type="password" placeholder="Password">
+  <span class="toggle-eye" onclick="togglePassword('password')">👁️</span>
+</div>
 
     <button onclick="login()" class="primary-btn full">Login</button>
+    
 
     <p id="status" class="auth-status"></p>
 

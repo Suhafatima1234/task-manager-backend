@@ -24,8 +24,16 @@
     </div>
 
     <input id="email" type="email" placeholder="Email">
-    <input id="password" type="password" placeholder="Password">
-    <input id="confirmPassword" type="password" placeholder="Confirm Password">
+
+   <div class="password-wrapper">
+  <input id="password" type="password" placeholder="Password">
+  <span class="toggle-eye" onclick="togglePassword('password')">👁️</span>
+</div>
+
+    <div class="password-wrapper">
+  <input id="confirmPassword" type="password" placeholder="Confirm Password">
+  <span class="toggle-eye" onclick="togglePassword('confirmPassword')">👁️</span>
+</div>
 
     <select id="gender">
       <option value="">Select gender</option>
