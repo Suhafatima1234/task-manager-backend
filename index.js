@@ -32,8 +32,8 @@ const userSchema = new mongoose.Schema({
   },
 
   // 👇 ADD THESE
-  resetOTP: String,
-  resetOTPExpiry: Date
+ // resetOTP: String,
+  //resetOTPExpiry: Date
 });
 
 
@@ -145,51 +145,51 @@ app.post("/login", async (req, res) => {
 
 
 
-app.post("/forgot-password", async (req, res) => {
-  const { email } = req.body;
+// app.post("/forgot-password", async (req, res) => {
+//   const { email } = req.body;
 
-  const user = await User.findOne({ email });
-  if (!user) {
-    return res.status(404).send("Email not registered");
-  }
+//   const user = await User.findOne({ email });
+//   if (!user) {
+//     return res.status(404).send("Email not registered");
+//   }
 
-  const otp = Math.floor(100000 + Math.random() * 900000).toString();
+//   const otp = Math.floor(100000 + Math.random() * 900000).toString();
 
-  user.resetOTP = otp;
-  user.resetOTPExpiry = Date.now() + 10 * 60 * 1000; // 10 min
-  await user.save();
+//   user.resetOTP = otp;
+//   user.resetOTPExpiry = Date.now() + 10 * 60 * 1000; // 10 min
+//   await user.save();
 
-  await transporter.sendMail({
-    from: process.env.EMAIL_USER,
-    to: email,
-    subject: "Password Reset OTP",
-    html: `<h2>Your OTP: ${otp}</h2><p>Valid for 10 minutes</p>`
-  });
+//   await transporter.sendMail({
+//     from: process.env.EMAIL_USER,
+//     to: email,
+//     subject: "Password Reset OTP",
+//     html: `<h2>Your OTP: ${otp}</h2><p>Valid for 10 minutes</p>`
+//   });
 
-  res.send("OTP sent to registered email");
-});
+//   res.send("OTP sent to registered email");
+// });
 
-app.post("/reset-password", async (req, res) => {
-  const { email, otp, newPassword } = req.body;
+// app.post("/reset-password", async (req, res) => {
+//   const { email, otp, newPassword } = req.body;
 
-  const user = await User.findOne({
-    email,
-    resetOTP: otp,
-    resetOTPExpiry: { $gt: Date.now() }
-  });
+//   const user = await User.findOne({
+//     email,
+//     resetOTP: otp,
+//     resetOTPExpiry: { $gt: Date.now() }
+//   });
 
-  if (!user) {
-    return res.status(400).send("Invalid or expired OTP");
-  }
+//   if (!user) {
+//     return res.status(400).send("Invalid or expired OTP");
+//   }
 
-  user.password = await bcrypt.hash(newPassword, 10);
-  user.resetOTP = undefined;
-  user.resetOTPExpiry = undefined;
+//   user.password = await bcrypt.hash(newPassword, 10);
+//   user.resetOTP = undefined;
+//   user.resetOTPExpiry = undefined;
 
-  await user.save();
+//   await user.save();
 
-  res.send("Password reset successful");
-});
+//   res.send("Password reset successful");
+// });
 
 
 // ---------- TASK ROUTES (PROTECTED) ----------
