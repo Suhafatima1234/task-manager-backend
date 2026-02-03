@@ -223,8 +223,19 @@ async function deleteTask(id) {
   loadTasks();
 }
 
-function togglePassword(id) {
+function togglePassword(id, eyeElement) {
   const input = document.getElementById(id);
-  input.type = input.type === "password" ? "text" : "password";
+  const icon = eyeElement.querySelector("i");
+
+  if (input.type === "password") {
+    input.type = "text";
+    icon.classList.remove("bi-eye");
+    icon.classList.add("bi-eye-slash");
+  } else {
+    input.type = "password";
+    icon.classList.remove("bi-eye-slash");
+    icon.classList.add("bi-eye");
+  }
 }
+
 

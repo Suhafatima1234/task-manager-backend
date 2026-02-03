@@ -6,6 +6,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet">
+
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
@@ -27,12 +29,20 @@
 
    <div class="password-wrapper">
   <input id="password" type="password" placeholder="Password">
-  <span class="toggle-eye" onclick="togglePassword('password')">👁️</span>
+  <span class="toggle-eye" onclick="togglePassword('password', this)">
+  <i class="bi bi-eye"></i>
+</span>
+
 </div>
 
     <div class="password-wrapper">
   <input id="confirmPassword" type="password" placeholder="Confirm Password">
-  <span class="toggle-eye" onclick="togglePassword('confirmPassword')">👁️</span>
+<span class="toggle-eye" onclick="togglePassword('confirmPassword', this)">
+  <i class="bi bi-eye"></i>
+</span>
+
+</span>
+
 </div>
 
     <select id="gender">
