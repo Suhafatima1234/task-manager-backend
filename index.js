@@ -143,7 +143,7 @@ app.post("/login", async (req, res) => {
 
 
 
-const transporter = require("./mailer");
+
 
 app.post("/forgot-password", async (req, res) => {
   const { email } = req.body;
